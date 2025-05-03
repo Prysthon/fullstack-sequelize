@@ -1,22 +1,17 @@
+// src/app.js
+require('dotenv').config();            // 1) carregue .env
 const express = require('express');
-
+const { connectDB } = require('./database');
 const authRoutes = require('./routes/auth');
 const protectedRoutes = require('./routes/protected');
 
-const { connectDB } = require('./database');
+connectDB();                           // 2) conexão única no cold start
 
-connectDB();   
-const app = express();
-
-// Middlewares
+const app = express();                 
 app.use(express.json());
 
-// Rotas
-app.get('/', (_request, response) => {
-  response.status(200).json('api funcionando');
-});
-app.use('/', authRoutes);
+app.get('/', (_req, res) => res.status(200).send('API working'));
+app.use('/auth', authRoutes);
 app.use('/protected', protectedRoutes);
 
-
-module.exports = app;
+module.exports = app;                  // só exporte a instância
