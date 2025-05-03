@@ -1,40 +1,37 @@
-const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../database');
 
 const SALT_ROUNDS = 10;
 
-const userSchema = new mongoose.Schema({
+const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
   name: {
-    type: String,
-    required: true,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   email: {
-    type: String,
-    required: true,
+    type: DataTypes.STRING,
+    allowNull: false,
     unique: true,
-    lowercase: true,
-    trim: true
+    validate: { isEmail: true },
   },
   password: {
-    type: String,
-    required: true,
-    select: false
-  }
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 }, {
-  timestamps: true
+  tableName: 'users',
+  timestamps: true,
+  hooks: {
+    beforeCreate: async (user) => {
+      user.password = await bcrypt.hash(user.password, SALT_ROUNDS);
+    },
+  },
 });
 
-// Hash da senha antes de salvar
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  try {
-    const hash = await bcrypt.hash(this.password, SALT_ROUNDS);
-    this.password = hash;
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
-
-module.exports = mongoose.model('User', userSchema);
+module.exports = User;

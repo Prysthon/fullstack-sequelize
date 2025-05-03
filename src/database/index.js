@@ -1,23 +1,28 @@
-// database/index.js
-const mongoose = require('mongoose');
+const { Sequelize } = require('sequelize');
+require('dotenv').config();
+
+const sequelize = new Sequelize(
+  process.env.POSTGRES_DB,
+  process.env.POSTGRES_USER,
+  process.env.POSTGRES_PASSWORD,
+  {
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    dialect: 'postgres',
+    logging: false,
+  }
+);
 
 async function connectDB() {
-  const uri = process.env.MONGODB_URI;
-  if (!uri) {
-    console.error('❌ MONGODB_URI não definida');
-    process.exit(1);
-  }
   try {
-    console.log('Conectando ao MongoDB em', uri);
-    await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log('✅ MongoDB conectado');
-  } catch (err) {
-    console.error('❌ Erro ao conectar ao MongoDB:', err);
+    await sequelize.authenticate();
+    console.log('✅ PostgreSQL conectado');
+    await sequelize.sync(); 
+    console.log('✅ Tabelas sincronizadas');
+  } catch (error) {
+    console.error('❌ Erro ao conectar PostgreSQL:', error);
     process.exit(1);
   }
 }
 
-module.exports = connectDB;
+module.exports = { sequelize, connectDB };
