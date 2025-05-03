@@ -1,7 +1,9 @@
+const {pg} = require('pg');
 const { Sequelize } = require('sequelize');
 const connectionString = process.env.DATABASE_URL;
 const sequelize = new Sequelize(connectionString, {
   dialect: 'postgres',
+  dialectModule: pg,
   protocol: 'postgres',
   logging: false,
   dialectOptions: { ssl: { rejectUnauthorized: false } }  // necessário no Supabase
