@@ -1,26 +1,19 @@
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
-
-const sequelize = new Sequelize(
-  process.env.POSTGRES_DB,
-  process.env.POSTGRES_USER,
-  process.env.POSTGRES_PASSWORD,
-  {
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
-    dialect: 'postgres',
-    logging: false,
-  }
-);
+const connectionString = process.env.DATABASE_URL;
+const sequelize = new Sequelize(connectionString, {
+  dialect: 'postgres',
+  protocol: 'postgres',
+  logging: false,
+  dialectOptions: { ssl: { rejectUnauthorized: false } }  // necessário no Supabase
+});
 
 async function connectDB() {
   try {
     await sequelize.authenticate();
-    console.log('✅ PostgreSQL conectado');
-    await sequelize.sync(); 
-    console.log('✅ Tabelas sincronizadas');
-  } catch (error) {
-    console.error('❌ Erro ao conectar PostgreSQL:', error);
+    console.log('✅ PostgreSQL (Supabase) conectado');
+    await sequelize.sync();
+  } catch (err) {
+    console.error('❌ Erro ao conectar no PostgreSQL:', err);
     process.exit(1);
   }
 }
