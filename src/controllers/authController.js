@@ -1,5 +1,6 @@
 const { createUser } = require('../services/userService');
 const { authenticate } = require('../services/authService');
+const { UniqueConstraintError } = require('sequelize');
 
 async function register(req, res) {
   const { name, email, password } = req.body;
@@ -28,13 +29,13 @@ async function register(req, res) {
 
   try {
     const user = await createUser({ name, email, password });
-    // não retornamos a senha, mesmo que hash esteja em select:false
+    // retorna o id gerado pelo Sequelize
     return res
       .status(201)
-      .json({ id: user._id, name: user.name, email: user.email });
+      .json({ id: user.id, name: user.name, email: user.email });
   } catch (err) {
-    // 4) Tratamento de conflito de e-mail duplicado
-    if (err.code === 11000) {
+    // 4) Tratamento de conflito de e-mail duplicado (Sequelize)
+    if (err instanceof UniqueConstraintError) {
       return res
         .status(409)
         .json({ error: 'Email already registered.' });
@@ -42,7 +43,7 @@ async function register(req, res) {
     // 5) Erro genérico
     return res
       .status(500)
-      .json({ error: `erro: ${err}` });
+      .json({ error: 'Internal server error.' });
   }
 }
 
