@@ -11,7 +11,7 @@ const app = express();
 app.use(express.json());
 
 app.get('/', (_req, res) => res.status(200).send('API working'));
-app.use('/auth', authRoutes);
+app.use('/', authRoutes);
 app.use('/protected', protectedRoutes);
 
 module.exports = app;                  // só exporte a instância
